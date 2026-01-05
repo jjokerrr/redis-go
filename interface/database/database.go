@@ -2,9 +2,6 @@ package database
 
 import "redis-go/interface/resp"
 
-// CmdLine 是 [][]byte 类型的别名,方便使用
-type CmdLine = [][]byte
-
 // Database 是数据库接口，定义了数据库的基本操作
 type Database interface {
 	Exec(client resp.Connection, args [][]byte) resp.Reply
