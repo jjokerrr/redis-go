@@ -13,7 +13,7 @@ func MakeSyncDict() *SyncDict {
 
 func (s *SyncDict) Get(key string) (val interface{}, exist bool) {
 	if value, ok := s.m.Load(key); ok {
-		return value, false
+		return value, true
 	}
 	return nil, false
 }

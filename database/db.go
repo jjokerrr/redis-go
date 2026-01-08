@@ -2,6 +2,7 @@ package database
 
 import (
 	"redis-go/datastruct/dict"
+	"redis-go/interface/database"
 	"redis-go/interface/resp"
 	"redis-go/resp/reply"
 	"strings"
@@ -42,7 +43,7 @@ func (db *DB) Exec(client resp.Connection, cmdLine CommandLine) resp.Reply {
 		return reply.MakeStandardErrorReply("[Command Error] Unknow command + " + cmdName)
 	}
 	// 3. 进行参数检查，因为存在可变参数的情况，这里抽象一下
-	if !ValidateArity(cmd.arity, cmdLine[1:]) {
+	if !ValidateArity(cmd.arity, cmdLine) {
 		return reply.MakeArgNumErrReply(cmdName)
 	}
 	// 4. 命令执行
@@ -57,7 +58,55 @@ func ValidateArity(arity int, args [][]byte) bool {
 	return -arity <= len(args)
 }
 
-// 下面简单写一个选项模式的内容，主要是联系使用，对于本文的借口没有实际意义
+// GetEntity 获取指定key的数据实体
+func (db *DB) GetEntity(key string) (database.DataEntity, bool) {
+	// 从底层数据
+	val, exist := db.data.Get(key)
+	if !exist {
+		return database.DataEntity{}, false
+	}
+	return database.DataEntity{Data: val}, true
+
+}
+
+// PutEntity 写入实体
+func (db *DB) PutEntity(key string, entity *database.DataEntity) int {
+	return db.data.Put(key, entity.Data)
+}
+
+// PutIfExists 存在则更新
+func (db *DB) PutIfExists(key string, entity *database.DataEntity) int {
+	return db.data.PutIfExists(key, entity.Data)
+}
+
+// PutIfAbsent 存在则放弃写入
+func (db *DB) PutIfAbsent(key string, entity *database.DataEntity) int {
+	return db.data.PutIfAbsent(key, entity.Data)
+}
+
+// Remove 删除数据
+func (db *DB) Remove(key string) int {
+	return db.data.Remove(key)
+}
+
+// Removes 批量删除, 返回值记录成功删除个数，作为fail safe逻辑
+func (db *DB) Removes(keys ...string) int {
+	deleted := 0 //
+	for _, key := range keys {
+		result := db.data.Remove(key)
+		if result > 0 {
+			deleted++
+		}
+	}
+	return deleted
+}
+
+// Flush 清空数据库
+func (db *DB) Flush() {
+	db.data.Clear()
+}
+
+//下面简单写一个选项模式的内容，主要是联系使用，对于本文的借口没有实际意义
 
 type DBOption struct { // 接受策略的对象
 	index int

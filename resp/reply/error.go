@@ -6,7 +6,7 @@ type ArgNumErrReply struct {
 }
 
 func (r *ArgNumErrReply) Error() string {
-	return "ERR wrong number of arguments for '" + r.Cmd + "' command"
+	return "[Error Arg Nums] ERR wrong number of arguments for '" + r.Cmd + "' command"
 }
 
 func (r *ArgNumErrReply) ToBytes() []byte {
