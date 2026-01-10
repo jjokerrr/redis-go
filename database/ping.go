@@ -11,5 +11,5 @@ func PingFunc(database *DB, args [][]byte) resp.Reply {
 
 // init函数，这个函数会在包加载的时候自动执行
 func init() {
-	RegisterCommand("PING", PingFunc, 1)
+	RegisterCommand("PING", PingFunc, 0)
 }

@@ -43,7 +43,7 @@ func (db *DB) Exec(client resp.Connection, cmdLine CommandLine) resp.Reply {
 		return reply.MakeStandardErrorReply("[Command Error] Unknow command + " + cmdName)
 	}
 	// 3. 进行参数检查，因为存在可变参数的情况，这里抽象一下
-	if !ValidateArity(cmd.arity, cmdLine) {
+	if !ValidateArity(cmd.arity, cmdLine[1:]) {
 		return reply.MakeArgNumErrReply(cmdName)
 	}
 	// 4. 命令执行

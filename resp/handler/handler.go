@@ -83,7 +83,7 @@ func (h *RespHandler) closeClient(client *connection.Connection) {
 }
 
 func MakeHandler() *RespHandler {
-	db := database.NewEchoDatabase()
+	db := database.NewStandaloneDatabase()
 	return &RespHandler{
 		db: db,
 	}
