@@ -1,9 +1,11 @@
 package database
 
 import (
+	"redis-go/constant"
 	"redis-go/datastruct/dict"
 	"redis-go/interface/database"
 	"redis-go/interface/resp"
+	"redis-go/lib/logger"
 	"redis-go/resp/reply"
 	"strings"
 )
@@ -16,14 +18,19 @@ import (
 // DB ---- 数据库实例，一个redis中存在16个数据库，以实例存在，屏蔽底层实现
 // dict ---- 具体的数据存储数据结构
 type DB struct {
-	index int
-	data  dict.Dict
+	index  int
+	data   dict.Dict
+	addAof func(line constant.CommandLine)
 }
 
 func MakeDB() *DB {
 	return &DB{
 		index: 0,
 		data:  dict.MakeSyncDict(),
+		// 这里要给addAof设置一个初始化的空方法，保证在LoadAof文件的时候不会重复写入命令
+		addAof: func(line constant.CommandLine) {
+			logger.Info("[New DB] init db add aof function")
+		},
 	}
 }
 
@@ -31,16 +38,15 @@ func MakeDB() *DB {
 type ExecFunc func(db *DB, args [][]byte) resp.Reply
 
 // CommandLine 命令行结构体对应命令行参数的，增强语义特性
-type CommandLine [][]byte
 
 // Exec 命令执行方法，命令执行的入口
-func (db *DB) Exec(client resp.Connection, cmdLine CommandLine) resp.Reply {
+func (db *DB) Exec(client resp.Connection, cmdLine constant.CommandLine) resp.Reply {
 	// 1. 获取命令
 	cmdName := strings.ToLower(string(cmdLine[0]))
 	// 2. 获取命令元信息
 	cmd, ok := cmdTable[cmdName]
 	if !ok {
-		return reply.MakeStandardErrorReply("[Command Error] Unknow command + " + cmdName)
+		return reply.MakeStandardErrorReply("[Command Error] Unknow command: " + cmdName)
 	}
 	// 3. 进行参数检查，因为存在可变参数的情况，这里抽象一下
 	if !ValidateArity(cmd.arity, cmdLine[1:]) {
@@ -156,5 +162,8 @@ func NewDB(opts ...Option) *DB {
 	return &DB{
 		index: option.index,
 		data:  option.data,
+		addAof: func(line constant.CommandLine) {
+			logger.Info("[New DB] init db add aof function")
+		},
 	}
 }

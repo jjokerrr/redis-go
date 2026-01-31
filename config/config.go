@@ -60,7 +60,7 @@ func parseConfig(src io.Reader) *ServerProperties {
 		if !ok {
 			fieldName = field.Name
 		}
-		val, ok := configMap[fieldName]
+		val, ok := configMap[strings.ToLower(fieldName)]
 		if !ok {
 			continue
 		}

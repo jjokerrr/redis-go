@@ -140,6 +140,7 @@ func parse0(reader io.Reader, ch chan *PayLoad) {
 				ch <- &PayLoad{
 					Data: res,
 				}
+				state = readState{}
 			}
 		}
 	}

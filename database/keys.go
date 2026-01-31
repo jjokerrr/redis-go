@@ -2,6 +2,7 @@ package database
 
 import (
 	"redis-go/interface/resp"
+	"redis-go/lib/utils"
 	"redis-go/lib/wildcard"
 	"redis-go/resp/reply"
 )
@@ -17,6 +18,7 @@ func execDel(db *DB, args [][]byte) resp.Reply {
 	for _, arg := range args {
 		keys = append(keys, string(arg))
 	}
+	db.addAof(utils.ToCmdLineWithName("DEL", args...))
 	return reply.MakeIntReply(int64(db.Removes(keys...)))
 }
 
@@ -38,6 +40,7 @@ func execExists(db *DB, args [][]byte) resp.Reply {
 // 刷新db
 func execFlushDB(db *DB, args [][]byte) resp.Reply {
 	db.Flush()
+	db.addAof(utils.ToCmdLineWithName("FLUSH", args...))
 	return reply.MakeOKReply()
 }
 
@@ -65,6 +68,7 @@ func execRename(db *DB, args [][]byte) resp.Reply {
 	}
 	db.PutEntity(dst, &srcEntity)
 	db.Remove(src)
+	db.addAof(utils.ToCmdLineWithName("RENAME", args...))
 	return reply.MakeOKReply()
 }
 
@@ -73,6 +77,7 @@ func execRenameNx(db *DB, args [][]byte) resp.Reply {
 	dst := string(args[1])
 	//  检查目标键是否存在
 	_, dstExist := db.GetEntity(dst)
+	db.addAof(utils.ToCmdLineWithName("RENAMENX", args...))
 	if dstExist {
 		return reply.MakeStandardErrorReply("key already exists")
 	}
@@ -98,6 +103,6 @@ func init() {
 	RegisterCommand("flush", execFlushDB, 0)
 	RegisterCommand("type", execType, 1)
 	RegisterCommand("rename", execRename, 2)
-	RegisterCommand("renamenx", execRename, 2)
+	RegisterCommand("renamenx", execRenameNx, 2)
 	RegisterCommand("keys", execKeys, 1)
 }

@@ -3,6 +3,7 @@ package database
 import (
 	"redis-go/interface/database"
 	"redis-go/interface/resp"
+	"redis-go/lib/utils"
 	"redis-go/resp/reply"
 )
 
@@ -20,6 +21,7 @@ func execGet(db *DB, args [][]byte) resp.Reply {
 // set
 func execSet(db *DB, args [][]byte) resp.Reply {
 	db.PutEntity(string(args[0]), &database.DataEntity{Data: args[1]})
+	db.addAof(utils.ToCmdLineWithName("SET", args...)) // 写命令应当发送, ...代表拆包操作
 	return reply.MakeOKReply()
 }
 

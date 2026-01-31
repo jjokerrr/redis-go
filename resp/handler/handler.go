@@ -55,6 +55,7 @@ func (h *RespHandler) Handle(ctx context.Context, conn net.Conn) error {
 			logger.Error("require bulk reply")
 			continue
 		}
+
 		res := h.db.Exec(client, bulkReply.Args)
 		err := client.Write(res.ToBytes())
 		if err != nil {

@@ -19,4 +19,5 @@ func RegisterCommand(name string, exec ExecFunc, arity int) {
 		exec:  exec,
 		arity: arity,
 	}
+
 }
